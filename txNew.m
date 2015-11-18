@@ -83,7 +83,7 @@ for i = 1:16
     carrier = fskmod(tonecoeff*ones(1,partLength),M,fsep,nsamp,Fs);
     %size(carrier); % Should always equal 1024
     % upsample the msg to be the same length as the carrier
-    msgUp = rectpulse(msgPartUp,nsamp);
+    msgUp = rectpulse(msgPart,nsamp);
 
     % multiply upsample message by carrier  to get transmitted signal
     txi = msgUp.*carrier;

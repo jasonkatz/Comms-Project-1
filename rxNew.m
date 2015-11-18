@@ -18,30 +18,26 @@ uint8(feedback1);
 %% I don't recommend touching the code below
 % Generate a carrier
 
-decodedMsg = [];
+msgCode = [];
 
 for i = 0:15
-
+    % Demodulate each channel into its own vector
     tonecoeff = i;
-    
-    sigPart = sig((i * 1024 +1):((i + 1) * 1024));
-    
-    carrier = fskmod(tonecoeff*ones(1,64),M,fsep,nsamp,Fs);
+    carrier = fskmod(tonecoeff*ones(1,1024),M,fsep,nsamp,Fs);
     rx = sigPart.*conj(carrier);
     rx = intdump(rx,nsamp);
     %% Recover your signal here
 
     % Demod 4-QAM
     rxMsg = qamdemod(rx,4);
-    correctedMsg = [];
+    
+    % Add new row to matrix
+    msgCode = [msgCode ; rxMsg];
+end
 
-    % Each channel has 64 symbols (4 sets of 16 (hopefully) repeated)
-    for j = 0:15
-        correctedMsg = [correctedMsg mode(rxMsg((j * 4 + 1):((j + 1) * 4)))];
-    end
-    
-    decodedMsg = [decodedMsg correctedMsg];
-    
+unleavedMsg = []; % lol
+for i = 1:1024
+    unleavedMsg = [unleavedMsg msgCode(:, i)'];
 end
 
 rx1 = de2bi(decodedMsg,'left-msb'); % Map Symbols to Bits
