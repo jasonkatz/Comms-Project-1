@@ -47,7 +47,7 @@ trellis = struct('numInputSymbols',2,'numOutputSymbols',4,...
 'outputs',[0 3;1 2;3 0;2 1]);
 
 % Encode bits
-code = convenc(bits, trellis);
+code = convenc(bits, trellis, 0);
 
 % Convert to symbols
 syms = bi2de(reshape(code,k,length(code)/k).','left-msb')';
