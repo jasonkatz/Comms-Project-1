@@ -24,7 +24,7 @@ for i = 0:15
     % Demodulate each channel into its own vector
     tonecoeff = i;
     carrier = fskmod(tonecoeff*ones(1,1024),M,fsep,nsamp,Fs);
-    rx = sigPart.*conj(carrier);
+    rx = sig.*conj(carrier);
     rx = intdump(rx,nsamp);
     %% Recover your signal here
 

@@ -60,7 +60,7 @@ if(msglength ~= 16384)
     error('You smurfed up')
 end
     
-tx = [];
+tx = zeros(1, 16384);
 
 for i = 1:16
     
