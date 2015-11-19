@@ -20,13 +20,26 @@ uint8(feedback1);
 
 msgCode = [];
 
-
+% Plot magnitude response of signal
+X = fftshift(fft(sig));
+plot(abs(X));
+title('Entire Signal');
 
 for i = 0:15
     % Demodulate each channel into its own vector
     tonecoeff = i;
     carrier = fskmod(tonecoeff*ones(1,1024),M,fsep,nsamp,Fs);
     rx = sig.*conj(carrier);
+    
+    % Now we lowpass all of the other channels
+    %[n Wn] = buttord(fsep / 2 / Fs, 
+    
+    % Plot magnitude response of channel
+    %figure;
+    X = fftshift(fft(rx));
+    %plot(abs(X));
+    title(sprintf('Channel %d/16', i));
+    
     rx = intdump(rx,nsamp);
     %% Recover your signal here
 

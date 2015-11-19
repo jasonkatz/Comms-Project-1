@@ -22,8 +22,8 @@ msgCode = [];
 
 % Plot magnitude response of signal
 X = fftshift(fft(sig));
-plot(abs(X));
-title('Entire Signal');
+%plot(abs(X));
+%title('Entire Signal');
 
 for i = 0:15
     % Demodulate each channel into its own vector
@@ -34,8 +34,20 @@ for i = 0:15
     % Plot magnitude response of channel
     figure;
     X = fftshift(fft(rx));
+    subplot(2, 1, 1);
     plot(abs(X));
     title(sprintf('Channel %d/16', i));
+    
+    % Now we lowpass all of the other channels
+    lowpass = filterdesign();
+    rx = filter(lowpass, rx);
+    
+    % Plot magnitude response of filtered channel
+    hold on;
+    X = fftshift(fft(rx));
+    subplot(2, 1, 2);
+    plot(abs(X));
+    title(sprintf('Channel %d/16 Filtered', i));
     
     rx = intdump(rx,nsamp);
     %% Recover your signal here
