@@ -13,7 +13,7 @@ for i = 1:15
     % Transmitters
     
     [sig1,bits1, gain1] = tx2();
-    [sig2,bits2, gain2] = txNew();
+    [sig2,bits2, gain2] = txNew2();
     
     sum = sig1 + sig2;
     sumNoisy = awgn(sum, noiseLevel, 1);
@@ -23,7 +23,7 @@ for i = 1:15
     sumForSpec =  [sumForSpec, sumNoisy];
     
     x1 = rx2(sumNoisy, bits1, gain1)
-    x2 = rxNew(sumNoisy, bits2, gain2)
+    x2 = rxNew2(sumNoisy, bits2, gain2)
 
     
     % check the SER

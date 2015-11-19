@@ -20,34 +20,13 @@ uint8(feedback1);
 
 msgCode = [];
 
-% Plot magnitude response of signal
-X = fftshift(fft(sig));
-%plot(abs(X));
-%title('Entire Signal');
+numChannels = 2;
 
-for i = 0:15
+for i = 0:(numChannels - 1)
     % Demodulate each channel into its own vector
     tonecoeff = i;
     carrier = fskmod(tonecoeff*ones(1,1024),M,fsep,nsamp,Fs);
     rx = sig.*conj(carrier);
-    
-    % Plot magnitude response of channel
-    figure;
-    X = fftshift(fft(rx));
-    subplot(2, 1, 1);
-    plot(abs(X));
-    title(sprintf('Channel %d/16', i));
-    
-    % Now we lowpass all of the other channels
-    lowpass = filterdesign();
-    rx = filter(lowpass, rx);
-    
-    % Plot magnitude response of filtered channel
-    hold on;
-    X = fftshift(fft(rx));
-    subplot(2, 1, 2);
-    plot(abs(X));
-    title(sprintf('Channel %d/16 Filtered', i));
     
     rx = intdump(rx,nsamp);
     %% Recover your signal here
@@ -76,8 +55,9 @@ trellis = struct('numInputSymbols',2,'numOutputSymbols',4,...
 % tblen = 10 (5 * 2)
 decodedMsg = vitdec(rx2, trellis, 10, 'trunc', 'hard');
 
-rxBits = de2bi(decodedMsg);
-rxBits = rxBits(:);
+%rxBits = de2bi(decodedMsg);
+%rxBits = rxBits(:);
+rxBits = decodedMsg;
 
 % Check the BER. If zero BER, output the # of correctly received bits.
 ber = biterr(rxBits, bits);
