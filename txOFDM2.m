@@ -1,0 +1,103 @@
+function [tx, bits, gain] = txOFDM2()
+% Example Transmitter. Outputs modulated data tx, and original data stream
+% data for checking error rate at receiver.
+% Your team will be assigned a number, rename your function txNUM.m
+% Also rename the global variable tofeedbackNUM
+
+% Global variable for feedback
+% you may use the following uint8 for whatever feedback purposes you want
+global feedback1;
+uint8(feedback1);
+
+global intrlvrIndices;
+
+global sigPower;
+
+global padLength;
+
+% DO NOT TOUCH BELOW
+fsep = 8e4;
+nsamp = 16;
+Fs = 120e4;
+M = 16;   % THIS IS THE M-ARY # for the FSK MOD.  You have 16 channels available
+% THE ABOVE CODE IS PURE EVIL
+
+% initialize, will be set by rx after 1st transmission
+if isempty(feedback1)
+    feedback1 = 0;
+    stateVal = 0;
+end
+
+%% You should edit the code starting here
+
+numChannels = 4;
+
+msgM = 4; % Select 4 QAM for my message signal
+k = log2(msgM);
+
+% You may use as many BITS as you wish, but must transmit exactly 1024
+% SYMBOLS
+bits = randi([0 1],128 * numChannels * k,1); % Generate random bits, pass these out of function, unchanged
+%bits = ones(64*k,1);
+
+% TURBO CODEEEEE!
+frmLen = length(bits);
+intrlvrIndices = randperm(frmLen);
+
+hTEnc = comm.TurboEncoder('TrellisStructure',poly2trellis(4, ...
+    [13 15 17],13),'InterleaverIndices',intrlvrIndices);
+
+code = step(hTEnc,bits);
+zeroPad = zeros(2^nextpow2(length(code)) - length(code), 1);
+padLength = length(zeroPad);
+code = [code' zeroPad']';
+
+% Convert to symbols
+syms = bi2de(reshape(code,k,length(code)/k).','left-msb')';
+
+% Random 4-QAM Signal
+msg = qammod(syms,4);
+msglength = length(msg);
+
+if(msglength ~= numChannels * 1024)
+    error('You smurfed up')
+end
+    
+tx = zeros(1, 16384);
+
+
+tonecoeff = 0;
+
+% Interleave 1024 symbols per channel
+%     msgPart = msg(i:16:msglength);
+%partLength = length(msg);
+msg = reshape(msg, numChannels, msglength/numChannels);
+
+%if(partLength ~= 1024)
+%    error('You smurfed up')
+%end
+
+%% You should stop editing code starting here
+
+%% Serioulsy, Stop.
+
+% Generate a carrier
+% don't mess with this code either, just pick a tonecoeff above from 0-15.
+carrier = fskmod(tonecoeff*ones(1,msglength / numChannels),M,fsep,nsamp,Fs);
+%size(carrier); % Should always equal 1024
+% upsample the msg to be the same length as the carrier
+msgOFDM = ifft(msg, numChannels);
+% multiply upsample message by carrier  to get transmitted signal
+msgOFDM = msgOFDM(:);
+% upsample for cases where we don't use all channels
+msgOFDM = rectpulse(msgOFDM, 16 / numChannels);
+txi = msgOFDM.'.*carrier;
+tx = tx + txi;
+
+% end
+
+% scale the output
+gain = std(tx);
+tx = tx./gain;
+
+end
