@@ -57,11 +57,11 @@ zeroPad = zeros(2^nextpow2(length(code)) - length(code), 1);
 code = [code' zeroPad']';
 
 % Interleave
-interCode = reshape(code, 256, 128).';
-interCode = reshape(interCode, length(code), 1);
+%interCode = reshape(code, 256, 128).';
+%interCode = reshape(interCode, length(code), 1);
 
 % Convert to symbols
-syms = bi2de(reshape(interCode,k,length(code)/k).','left-msb')';
+syms = bi2de(reshape(code,k,length(code)/k).','left-msb')';
 
 % Random 4-QAM Signal
 msg = qammod(syms,4);

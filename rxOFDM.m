@@ -49,11 +49,11 @@ rx1 = de2bi(rxMsg,'left-msb'); % Map Symbols to Bits
 rx2 = reshape(rx1.',numel(rx1),1);
 
 % Undo the bit interleave
-interRx = reshape(rx2, 128, 256).';
-interRx = reshape(interRx, length(rx2), 1);
+%interRx = reshape(rx2, 128, 256).';
+%interRx = reshape(interRx, length(rx2), 1);
 
 % 12270 added zeros
-interRx = interRx(1:(length(interRx) - 12270));
+rx2 = rx2(1:(length(rx2) - 12270));
 
 frmLen = 4096;
 
@@ -61,7 +61,7 @@ hTDec = comm.TurboDecoder('TrellisStructure',poly2trellis(4, ...
     [13 15 17],13),'InterleaverIndices',intrlvrIndices, ...
     'NumIterations',4);
 
-decodedMsg = step(hTDec,interRx);
+decodedMsg = step(hTDec,rx2);
 
 %rxBits = de2bi(decodedMsg);
 %rxBits = rxBits(:);
@@ -69,6 +69,8 @@ rxBits = decodedMsg;
 
 % Check the BER. If zero BER, output the # of correctly received bits.
 ber = biterr(rxBits, bits);
+
+%rxBits == bits
 
 if ber == 0
     disp('Sucessful frame User 2')

@@ -1,7 +1,6 @@
 clc; close all;
 dbstop if error;
 noiseLevel  =  randi([0 20]);
-noiseLevel = 15;
 
 % Sampling freq for specgram
 Fs = 120e4;
