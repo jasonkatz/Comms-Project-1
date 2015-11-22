@@ -9,10 +9,6 @@ function [tx, bits, gain] = txOFDM2()
 global feedback1;
 uint8(feedback1);
 
-global intrlvrIndices;
-
-global sigPower;
-
 global padLength;
 
 % DO NOT TOUCH BELOW
@@ -30,7 +26,7 @@ end
 
 %% You should edit the code starting here
 
-numChannels = 4;
+numChannels = 16;
 
 msgM = 4; % Select 4 QAM for my message signal
 k = log2(msgM);
@@ -41,8 +37,15 @@ bits = randi([0 1],128 * numChannels * k,1); % Generate random bits, pass these 
 %bits = ones(64*k,1);
 
 % TURBO CODEEEEE!
-frmLen = length(bits);
-intrlvrIndices = randperm(frmLen);
+load('interleaverIndices.mat'); % Load indices
+% Only take what we need based on the channels we're using
+if numChannels == 16
+    intrlvrIndices = intrlvrIndices4096;
+elseif numChannels == 8
+    intrlvrIndices = intrlvrIndices2048;
+elseif numChannels == 4
+    intrlvrIndices = intrlvrIndices1024;
+end
 
 hTEnc = comm.TurboEncoder('TrellisStructure',poly2trellis(4, ...
     [13 15 17],13),'InterleaverIndices',intrlvrIndices);

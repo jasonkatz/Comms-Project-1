@@ -15,10 +15,6 @@ numCorrect = 0; % initialize the # of correct Rx bits
 global feedback1;
 uint8(feedback1);
 
-global intrlvrIndices;
-
-global sigPower;
-
 global padLength;
 
 %% I don't recommend touching the code below
@@ -26,7 +22,7 @@ global padLength;
 
 msgCode = [];
 
-numChannels = 4;
+numChannels = 16;
 
 %spectrogram(sig);
     
@@ -55,8 +51,15 @@ rx2 = reshape(rx1.',numel(rx1),1);
 % Remove padded zeros
 rx2 = rx2(1:(length(rx2) - padLength));
 
-frmLen = numChannels * 256;
-
+load('interleaverIndices.mat'); % Load indices
+% Only take what we need based on the channels we're using
+if numChannels == 16
+    intrlvrIndices = intrlvrIndices4096;
+elseif numChannels == 8
+    intrlvrIndices = intrlvrIndices2048;
+elseif numChannels == 4
+    intrlvrIndices = intrlvrIndices1024;
+end
 hTDec = comm.TurboDecoder('TrellisStructure',poly2trellis(4, ...
     [13 15 17],13),'InterleaverIndices',intrlvrIndices, ...
     'NumIterations',4);
