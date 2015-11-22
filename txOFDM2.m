@@ -9,8 +9,6 @@ function [tx, bits, gain] = txOFDM2()
 global feedback1;
 uint8(feedback1);
 
-global padLength;
-
 % DO NOT TOUCH BELOW
 fsep = 8e4;
 nsamp = 16;
@@ -20,13 +18,13 @@ M = 16;   % THIS IS THE M-ARY # for the FSK MOD.  You have 16 channels available
 
 % initialize, will be set by rx after 1st transmission
 if isempty(feedback1)
-    feedback1 = 0;
+    feedback1 = 16;
     stateVal = 0;
 end
 
 %% You should edit the code starting here
 
-numChannels = 16;
+numChannels = feedback1;
 
 msgM = 4; % Select 4 QAM for my message signal
 k = log2(msgM);

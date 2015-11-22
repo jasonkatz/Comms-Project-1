@@ -15,14 +15,12 @@ numCorrect = 0; % initialize the # of correct Rx bits
 global feedback1;
 uint8(feedback1);
 
-global padLength;
-
 %% I don't recommend touching the code below
 % Generate a carrier
 
 msgCode = [];
 
-numChannels = 16;
+numChannels = feedback1;
 
 %spectrogram(sig);
     
@@ -49,7 +47,13 @@ rx1 = de2bi(rxMsg,'left-msb'); % Map Symbols to Bits
 rx2 = reshape(rx1.',numel(rx1),1);
 
 % Remove padded zeros
-rx2 = rx2(1:(length(rx2) - padLength));
+if numChannels == 16
+    rx2 = rx2(1:(length(rx2) - 12270));
+elseif numChannels == 8
+    rx2 = rx2(1:(length(rx2) - 6126));
+elseif numChannels == 4
+    rx2 = rx2(1:(length(rx2) - 3054));
+end
 
 load('interleaverIndices.mat'); % Load indices
 % Only take what we need based on the channels we're using
@@ -86,5 +90,12 @@ end
 % set the new value for the feedback here
 % Use feedback to give the transmitter the SNR
 totalPower = norm(sig);
+if totalPower < 194
+    feedback1 = 16;
+elseif totalPower > 207
+    feedback1 = 4;
+else
+    feedback1 = 8;
+end
 
 end
