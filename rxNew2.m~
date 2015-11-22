@@ -18,27 +18,20 @@ uint8(feedback1);
 %% I don't recommend touching the code below
 % Generate a carrier
 
-feedback1 = 1;
-
 msgCode = [];
 
 numChannels = 1;
 
-
-%spectrogram(sig);
-
 for i = 0:(numChannels - 1)
-    
     % Demodulate each channel into its own vector
     tonecoeff = i;
     carrier = fskmod(tonecoeff*ones(1,1024),M,fsep,nsamp,Fs);
     rx = sig.*conj(carrier);
     
-    b = rcosdesign(1,10,nsamp, 'sqrt');
-    rx = filter(conj(b), 1, rx);
-
     rx = intdump(rx,nsamp);
     %% Recover your signal here
+    
+    spectrogram(rx);
 
     % Demod 4-QAM
     rxMsg = qamdemod(rx,4);

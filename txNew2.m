@@ -23,17 +23,17 @@ Fs = 120e4;
 M = 16;   % THIS IS THE M-ARY # for the FSK MOD.  You have 16 channels available
 % THE ABOVE CODE IS PURE EVIL
 
-
+stateVal = 1;
 
 % initialize, will be set by rx after 1st transmission
 if isempty(feedback1)
     feedback1 = 0;
-    stateVal = 0;
+    %stateVal = 0;
 end
 
 %% You should edit the code starting here
 
-numChannels = 16;
+numChannels = 1;
 
 msgM = 4; % Select 4 QAM for my message signal
 k = log2(msgM);
@@ -79,13 +79,16 @@ for i = 1:numChannels
     %% You should stop editing code starting here
 
     %% Serioulsy, Stop.
-
+    
     % Generate a carrier
     % don't mess with this code either, just pick a tonecoeff above from 0-15.
     carrier = fskmod(tonecoeff*ones(1,partLength),M,fsep,nsamp,Fs);
     %size(carrier); % Should always equal 1024
     % upsample the msg to be the same length as the carrier
     msgUp = rectpulse(msgPart,nsamp);
+    
+    b = rcosdesign(1,10,nsamp, 'sqrt');
+    msgUp = filter(b, 1, msgUp);
 
     % multiply upsample message by carrier  to get transmitted signal
     txi = msgUp.*carrier;

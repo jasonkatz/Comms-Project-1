@@ -1,5 +1,7 @@
-clear all; clear global; clc; close all
+clc; close all;
+dbstop if error;
 noiseLevel  =  randi([0 20]);
+noiseLevel = 15;
 
 % Sampling freq for specgram
 Fs = 120e4;
@@ -16,6 +18,7 @@ for i = 1:15
     [sig2,bits2, gain2] = txNew2();
     
     sum = sig1 + sig2;
+    sum = sig2;
     sumNoisy = awgn(sum, noiseLevel, 1);
  
     
@@ -33,7 +36,7 @@ end
 
 noiseLevel
 [total1, total2]
-%spectrogram(sumForSpec,64,[],[],Fs,'yaxis')
+spectrogram(sumForSpec,64,[],[],Fs,'yaxis')
 
 
 
