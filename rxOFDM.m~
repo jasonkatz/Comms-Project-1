@@ -22,44 +22,44 @@ feedback1 = 1;
 
 msgCode = [];
 
-numChannels = 1;
+numChannels = 16;
 
 
 %spectrogram(sig);
-
-for i = 0:(numChannels - 1)
     
-    % Demodulate each channel into its own vector
-    tonecoeff = i;
-    carrier = fskmod(tonecoeff*ones(1,1024),M,fsep,nsamp,Fs);
-    rx = sig.*conj(carrier);
+% Demodulate each channel into its own vector
+tonecoeff = 0;
+carrier = fskmod(tonecoeff*ones(1,1024),M,fsep,nsamp,Fs);
+rx = sig.*conj(carrier);
 
-    rx = intdump(rx,nsamp);
-    %% Recover your signal here
+%% Recover your signal here
 
-    % Demod 4-QAM
-    rxMsg = qamdemod(rx,4);
-    
-    % Add new row to matrix
-    msgCode = [msgCode ; rxMsg];
-end
+rx = reshape(rx, 16, length(rx)/16);
 
-% Get single vector of symbols
-unleavedMsg = []; % lol
-for i = 1:1024
-    unleavedMsg = [unleavedMsg (msgCode(:, i))'];
-end
+rx = fft(rx, 16);
 
-rx1 = de2bi(unleavedMsg,'left-msb'); % Map Symbols to Bits
+rx = rx(:);
+
+% Demod 4-QAM
+rxMsg = qamdemod(rx,4);
+
+rx1 = de2bi(rxMsg,'left-msb'); % Map Symbols to Bits
 rx2 = reshape(rx1.',numel(rx1),1);
 
-% Construct trellis for rate 1/2 conv code
-trellis = struct('numInputSymbols',2,'numOutputSymbols',4,...
-'numStates',4,'nextStates',[0 2;0 2;1 3;1 3],...
-'outputs',[0 3;1 2;3 0;2 1]);
+% Undo the bit interleave
+interRx = reshape(rx2, 128, 256).';
+interRx = reshape(interRx, length(rx2), 1);
 
-% tblen = 10 (5 * 2)
-decodedMsg = vitdec(rx2, trellis, 10, 'trunc', 'hard');
+frmLintrlvrIndices = randperm(frmLen);
+
+hTDec = comm.TurboDecoder('TrellisStructure',poly2trellis(4, ...
+    [13 15 17],13),'InterleaverIndices',intrlvrIndices, ...
+    'NumIterations',4);
+
+decodedData = step(hTDec,interRx);
+% 12270 added zeros
+
+decodedData = decodedData(1:(length(decodedData) - 12270));
 
 %rxBits = de2bi(decodedMsg);
 %rxBits = rxBits(:);
