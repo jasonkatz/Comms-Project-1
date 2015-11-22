@@ -9,14 +9,9 @@ function [tx, bits, gain] = txOFDM()
 global feedback1;
 uint8(feedback1);
 
-% You can use global variables to maintain state of your tx, so long as you
-% do not use this information in the Rx
-% I am going to use the global to toggle time slots, and simply alternate
-% between transmitting and not transmitting
-global stateVal
-
 global intrlvrIndices;
 
+global sigPower;
 
 % DO NOT TOUCH BELOW
 fsep = 8e4;
@@ -25,12 +20,10 @@ Fs = 120e4;
 M = 16;   % THIS IS THE M-ARY # for the FSK MOD.  You have 16 channels available
 % THE ABOVE CODE IS PURE EVIL
 
-stateVal = 1;
-
 % initialize, will be set by rx after 1st transmission
 if isempty(feedback1)
     feedback1 = 0;
-    %stateVal = 0;
+    stateVal = 0;
 end
 
 %% You should edit the code starting here
@@ -55,10 +48,6 @@ hTEnc = comm.TurboEncoder('TrellisStructure',poly2trellis(4, ...
 code = step(hTEnc,bits);
 zeroPad = zeros(2^nextpow2(length(code)) - length(code), 1);
 code = [code' zeroPad']';
-
-% Interleave
-%interCode = reshape(code, 256, 128).';
-%interCode = reshape(interCode, length(code), 1);
 
 % Convert to symbols
 syms = bi2de(reshape(code,k,length(code)/k).','left-msb')';
@@ -105,15 +94,5 @@ tx = tx + txi;
 % scale the output
 gain = std(tx);
 tx = tx./gain;
-
-
-if(stateVal ==0) % if i'm not allowed to transmit, just set bits to all 0
-  tx = zeros(size(tx));
-  gain = 1;
-  stateVal = 1;
-else
-    stateVal = 0;
-end
-
 
 end

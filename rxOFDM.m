@@ -17,10 +17,10 @@ uint8(feedback1);
 
 global intrlvrIndices;
 
+global sigPower;
+
 %% I don't recommend touching the code below
 % Generate a carrier
-
-feedback1 = 1;
 
 msgCode = [];
 
@@ -47,10 +47,6 @@ rxMsg = qamdemod(rx,4);
 
 rx1 = de2bi(rxMsg,'left-msb'); % Map Symbols to Bits
 rx2 = reshape(rx1.',numel(rx1),1);
-
-% Undo the bit interleave
-%interRx = reshape(rx2, 128, 256).';
-%interRx = reshape(interRx, length(rx2), 1);
 
 % 12270 added zeros
 rx2 = rx2(1:(length(rx2) - 12270));
@@ -81,8 +77,7 @@ end
 
 
 % set the new value for the feedback here
-% You probably want to do somehting more intelligent
-
-feedback1 = feedback1 + 1;
+% Use feedback to give the transmitter the SNR
+totalPower = norm(sig)
 
 end
