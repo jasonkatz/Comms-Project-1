@@ -1,6 +1,9 @@
 function [tx, bits, gain] = txOFDM2()
-% Example Transmitter. Outputs modulated data tx, and original data stream
-% data for checking error rate at receiver.
+% ECE-300 Project 1 - Transmitter
+% Jessica Marshall, Elie Lerea and Jason Katz
+% Uses turbocoding and OFDM to transmit the data
+% At lower SNR, fewer channels are used
+
 % Your team will be assigned a number, rename your function txNUM.m
 % Also rename the global variable tofeedbackNUM
 
@@ -17,7 +20,7 @@ M = 16;   % THIS IS THE M-ARY # for the FSK MOD.  You have 16 channels available
 % THE ABOVE CODE IS PURE EVIL
 
 % initialize, will be set by rx after 1st transmission
-if isempty(feedback1)
+if isempty(feedback1) || feedback1 == 0
     feedback1 = 16;
     stateVal = 0;
 end
@@ -29,14 +32,13 @@ numChannels = feedback1;
 msgM = 4; % Select 4 QAM for my message signal
 k = log2(msgM);
 
-% You may use as many BITS as you wish, but must transmit exactly 1024
-% SYMBOLS
+% Generate data (4096 - 16 channels ; 2048 - 8 channels ; 1024 - 4 channels
 bits = randi([0 1],128 * numChannels * k,1); % Generate random bits, pass these out of function, unchanged
-%bits = ones(64*k,1);
 
-% TURBO CODEEEEE!
+%% TURBO CODEEEEE
+
 load('interleaverIndices.mat'); % Load indices
-% Only take what we need based on the channels we're using
+% Only use what we need based on the number of channels we're using
 if numChannels == 16
     intrlvrIndices = intrlvrIndices4096;
 elseif numChannels == 8
@@ -45,9 +47,11 @@ elseif numChannels == 4
     intrlvrIndices = intrlvrIndices1024;
 end
 
+% Create encoder
 hTEnc = comm.TurboEncoder('TrellisStructure',poly2trellis(4, ...
     [13 15 17],13),'InterleaverIndices',intrlvrIndices);
 
+% Encode bits and pad zeroes so we have the correct amount
 code = step(hTEnc,bits);
 zeroPad = zeros(2^nextpow2(length(code)) - length(code), 1);
 padLength = length(zeroPad);
@@ -58,25 +62,17 @@ syms = bi2de(reshape(code,k,length(code)/k).','left-msb')';
 
 % Random 4-QAM Signal
 msg = qammod(syms,4);
-msglength = length(msg);
 
+% Check length
+msglength = length(msg);
 if(msglength ~= numChannels * 1024)
     error('You smurfed up')
 end
-    
-tx = zeros(1, 16384);
-
 
 tonecoeff = 0;
 
 % Interleave 1024 symbols per channel
-%     msgPart = msg(i:16:msglength);
-%partLength = length(msg);
 msg = reshape(msg, numChannels, msglength/numChannels);
-
-%if(partLength ~= 1024)
-%    error('You smurfed up')
-%end
 
 %% You should stop editing code starting here
 
@@ -86,16 +82,18 @@ msg = reshape(msg, numChannels, msglength/numChannels);
 % don't mess with this code either, just pick a tonecoeff above from 0-15.
 carrier = fskmod(tonecoeff*ones(1,msglength / numChannels),M,fsep,nsamp,Fs);
 %size(carrier); % Should always equal 1024
-% upsample the msg to be the same length as the carrier
-msgOFDM = ifft(msg, numChannels);
-% multiply upsample message by carrier  to get transmitted signal
-msgOFDM = msgOFDM(:);
-% upsample for cases where we don't use all channels
-msgOFDM = rectpulse(msgOFDM, 16 / numChannels);
-txi = msgOFDM.'.*carrier;
-tx = tx + txi;
 
-% end
+% Use ifft to get orthogonal frequency vectors for OFDM
+msgOFDM = ifft(msg, numChannels);
+
+% Convert to column vector
+msgOFDM = msgOFDM(:);
+
+% Upsample for cases where we don't use all channels
+msgOFDM = rectpulse(msgOFDM, 16 / numChannels);
+
+% multiply upsample message by carrier  to get transmitted signal
+tx = msgOFDM.'.*carrier;
 
 % scale the output
 gain = std(tx);

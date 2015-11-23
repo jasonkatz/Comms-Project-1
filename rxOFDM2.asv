@@ -41,20 +41,16 @@ rx = intdump(rx, 16 / numChannels);
 % Convert to properly sized matrix
 rx = reshape(rx, numChannels, length(rx)/numChannels);
 
-% Use fft to get data back using OFDM
+
 rx = fft(rx, numChannels);
 
-% Convert to column vector
 rx = rx(:);
 
 % Demod 4-QAM
 rxMsg = qamdemod(rx,4);
 
-% Map Symbols to Bits
-rx1 = de2bi(rxMsg,'left-msb');
+rx1 = de2bi(rxMsg,'left-msb'); % Map Symbols to Bits
 rx2 = reshape(rx1.',numel(rx1),1);
-
-%% TURBO DECODEEEE
 
 % Remove padded zeros
 if numChannels == 16
@@ -74,14 +70,15 @@ elseif numChannels == 8
 elseif numChannels == 4
     intrlvrIndices = intrlvrIndices1024;
 end
-
-% Create decoder
 hTDec = comm.TurboDecoder('TrellisStructure',poly2trellis(4, ...
     [13 15 17],13),'InterleaverIndices',intrlvrIndices, ...
     'NumIterations',4);
 
-% Decode bits
-rxBits = step(hTDec,rx2);
+decodedMsg = step(hTDec,rx2);
+
+%rxBits = de2bi(decodedMsg);
+%rxBits = rxBits(:);
+rxBits = decodedMsg;
 
 % Check the BER. If zero BER, output the # of correctly received bits.
 ber = biterr(rxBits, bits);

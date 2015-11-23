@@ -37,10 +37,10 @@ rxBits = rxBits(:);
 ber = biterr(rxBits, bits);
 
 if ber == 0
-    disp('Sucessful frame User 1')
+  %  disp('Sucessful frame User 1')
     numCorrect = length(bits);
 else 
-   %scatterplot(rx); 
+   % scatterplot(rx); 
 end
 
 

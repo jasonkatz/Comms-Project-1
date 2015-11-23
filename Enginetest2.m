@@ -1,7 +1,5 @@
-clc; clear all; close all;
-dbstop if error;
+clear all; clear global; clc; close all
 noiseLevel  =  randi([0 20]);
-noiseLevel = 18;
 
 % Sampling freq for specgram
 Fs = 120e4;
@@ -18,25 +16,22 @@ for i = 1:15
     [sig2,bits2, gain2] = txOFDM2();
     
     sum = sig1 + sig2;
-    %sum = sig2;
     sumNoisy = awgn(sum, noiseLevel, 1);
  
     
     % append;
     sumForSpec =  [sumForSpec, sumNoisy];
     
-    x1 = rx2(sumNoisy, bits1, gain1)
-    x2 = rxOFDM2(sumNoisy, bits2, gain2)
-
     
     % check the SER
-   total1 = total1 + x1;
-   total2 = total2 + x2;
+   total1 = total1 + rx2(sumNoisy,bits1, gain1);
+   total2 = total2 + rxOFDM2(sumNoisy,bits2, gain2);
 end
 
 noiseLevel
 [total1, total2]
-%spectrogram(sumForSpec,64,[],[],Fs,'yaxis')
+spectrogram(sumForSpec,64,[],[],Fs,'yaxis')
+
 
 
 
