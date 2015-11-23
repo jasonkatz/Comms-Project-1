@@ -13,7 +13,7 @@ for i = 1:15
     % Transmitters
     
     [sig1,bits1, gain1] = tx2();
-    [sig2,bits2, gain2] = txOFDM2();
+    [sig2,bits2, gain2] = txShabbaton();
     
     sum = sig1 + sig2;
     sumNoisy = awgn(sum, noiseLevel, 1);
@@ -25,7 +25,7 @@ for i = 1:15
     
     % check the SER
    total1 = total1 + rx2(sumNoisy,bits1, gain1);
-   total2 = total2 + rxOFDM2(sumNoisy,bits2, gain2);
+   total2 = total2 + rxShabbaton(sumNoisy,bits2, gain2);
 end
 
 noiseLevel

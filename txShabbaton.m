@@ -1,6 +1,6 @@
-function [tx, bits, gain] = txOFDM2()
+function [tx, bits, gain] = txShabbaton()
 % ECE-300 Project 1 - Transmitter
-% Jessica Marshall, Elie Lerea and Jason Katz
+% Jessica Marshall, Elie Lerea and Jason Katz - Team Shabbaton
 % Uses turbocoding and OFDM to transmit the data
 % At lower SNR, fewer channels are used
 
